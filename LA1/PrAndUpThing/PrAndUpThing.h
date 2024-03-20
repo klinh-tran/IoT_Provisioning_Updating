@@ -37,6 +37,6 @@ void handleSeven();   // either remove this, or give it TODO and rename
 
 #include <HTTPClient.h> // ESP32 library for making HTTP requests
 #include <Update.h>     // OTA update library
-void readThenWriteVersion();
+void setupOTA();
 int doCloudGet(HTTPClient *, String);
 void handleOTAProgress(size_t done, size_t total);

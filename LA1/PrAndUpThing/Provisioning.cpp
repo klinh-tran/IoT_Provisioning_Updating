@@ -116,6 +116,8 @@ void handleConnect() {
     delay(100);
   }
 
+  setupOTA();
+
   // TODO: Change response to include button to take user back if they want to
   // try again.
   webServer.send(200, "text/plain", connectionStatus);
@@ -138,12 +140,85 @@ void getHtml(String &html, const char *boiler[], int boilerLen,
 #define FIRMWARE_SERVER_IP_ADDR "192.168.13.143"
 #define FIRMWARE_SERVER_PORT    "8000"
 
+void setupOTA() {
+  // materials for doing an HTTPS GET on github from the BinFiles/ dir
+  HTTPClient http;  // HTTPClient is a class used to make HTTP requests.
+  int respCode;     // store the response code from the server
+  int highestAvailableVersion = -1;
+
+  // read the version file from the cloud
+  respCode = doCloudGet(&http, "version.txt");
+  Serial.print("respCode: ");
+  Serial.println(respCode);
+  if(respCode > 0) { // check response code (-ve on failure)
+    highestAvailableVersion = atoi(http.getString().c_str());
+    Serial.print("Highest available version: ");
+    Serial.println(highestAvailableVersion);
+  }
+  else
+    Serial.printf("couldn't get version! rtn code: %d\n", respCode);
+  http.end(); // free resources
+
+  // do we know the latest version, and does the firmware need updating?
+  if(respCode < 0) {
+    return;
+  } else if(firmwareVersion >= highestAvailableVersion) {
+    Serial.printf("firmware is up to date\n");
+    return;
+  }
+
+  // do a firmware update
+  Serial.printf(
+    "upgrading firmware from version %d to version %d\n",
+    firmwareVersion, highestAvailableVersion
+  );
+
+  // do a GET for the .bin, e.g. "23.bin" when "version.txt" contains 23
+  String binName = String(highestAvailableVersion);
+  binName += ".bin";
+  respCode = doCloudGet(&http, binName);
+  int updateLength = http.getSize();
+
+  // possible improvement: if size is improbably big or small, refuse
+  if(respCode > 0 && respCode != 404) { // check response code (-ve on failure)
+    Serial.printf(".bin code/size: %d; %d\n\n", respCode, updateLength);
+  } else {
+    Serial.printf("failed to get .bin! return code is: %d\n", respCode);
+    http.end(); // free resources
+    return;
+  }
+
+  // write the new version of the firmware to flash
+  WiFiClient stream = http.getStream();
+  Update.onProgress(handleOTAProgress); // print out progress
+  if(Update.begin(updateLength)) {
+    Serial.printf("starting OTA may take a minute or two...\n");
+    Update.writeStream(stream);
+    if(Update.end()) {
+      Serial.printf("update done, now finishing...\n");
+      Serial.flush();
+      if(Update.isFinished()) {
+        Serial.printf("update successfully finished; rebooting...\n\n");
+        ESP.restart();
+      } else {
+        Serial.printf("update didn't finish correctly :(\n");
+        Serial.flush();
+      }
+    } else {
+      Serial.printf("an update error occurred, #: %d\n" + Update.getError());
+      Serial.flush();
+    }
+  } else {
+    Serial.printf("not enough space to start OTA update :(\n");
+    Serial.flush();
+  }
+  stream.flush();
+}
 
 // helper for downloading from cloud firmware server; for experimental
 // purposes just use a hard-coded IP address and port (defined above)
 int doCloudGet(HTTPClient *http, String fileName) {
-  // build up URL from components; for example:
-  // http://192.168.4.2:8000/Thing.bin
+  // build up URL from components
   String url =
     String("http://") + FIRMWARE_SERVER_IP_ADDR + ":" +
     FIRMWARE_SERVER_PORT + "/" + fileName;
