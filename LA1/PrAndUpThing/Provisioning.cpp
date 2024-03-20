@@ -49,6 +49,7 @@ void setupServer() {
   webServer.on("/wifi", handleWifi);
   webServer.on("/connect", handleConnect);
   webServer.on("/status", handleStatus);
+  webServer.on("/update", handleUpdate);
   webServer.onNotFound(handleNotFound);
   webServer.begin();
 }
@@ -58,9 +59,9 @@ void handleRoot() {
   Serial.println("seriving page at /");
   replacement_t repls[] = { // the elements to replace in the boilerplate
     {  1, apSSID.c_str() },
-    {  8, "" },
-    {  9, "<p>Choose a <a href=\"wifi\">wifi access point</a>.</p>" },
-    { 10, "<p>Check <a href='/status'>wifi status</a>.</p>" },
+    {  8, "<p>Choose a <a href=\"wifi\">wifi access point</a>.</p>" },
+    {  9, "<p>Check <a href='/status'>wifi status</a>.</p>" },
+    { 10, "<p>Check for <a href='/update'>updates</a>.</p>" },
   };
   
   String toSend = "";
@@ -115,6 +116,7 @@ void handleWifi() {
 // Function that attempts connection with user input
 // TODO: Add some validation for user input?
 void handleConnect() {
+  WiFi.begin();
   Serial.println("serving page /connect");
   String ssid = webServer.arg(0);
   String password = webServer.arg(1);
@@ -123,40 +125,30 @@ void handleConnect() {
   String connectionStatus = "";
   String message = "";
   WiFi.begin(ssid, password);
+  delay(300);  // settle down
 
-  // Attempt to connect to given network
-  // while (connecting) {
-  //   if (WiFi.status() == WL_CONNECTED) {
-  //     connectionStatus = "<h2>Connected</h2>";
-  //     message = "<p>Check <a href='/status'>wifi status</a>.</p>";
-  //     connecting = false;
-  //   } else if (WiFi.status() == WL_CONNECT_FAILED) {
-  //     connectionStatus = "<h2>Connection failed</h2>";
-  //     message = "<p>Check <a href='/status'>wifi status</a>.</p>";
-  //     connecting = false;
-  //   } else if (WiFi.status() == .6) {
-  //     connectionStatus = "<h2>No network with this SSID found</h2>";
-  //     message = "<p>Check <a href='/status'>wifi status</a>.</p>";
-  //     connecting = false;
-  //   }
-  // }
-
-  delay(100);
-
-  for(uint8_t i = 0; i < webServer.args(); i++ ) {
-    if (WiFi.status() == WL_CONNECTED) {
-      connectionStatus = "<h2>Connected</h2>";
-      message = "<p>Check <a href='/status'>wifi status</a>.</p>";
-      connecting = false;
-    } else {
-      connectionStatus = "<h2>Connection failed. Please check again :/</h2>";
-      message = "<p>Check <a href='/status'>wifi status</a>.</p>";
-      connecting = false;
-    }
-  }
 
   // TODO: Change response to include button to take user back if they want to
   // try again.
+
+  // Attempt to connect to given network
+  while (connecting) {
+    if (WiFi.status() == WL_CONNECTED) {
+      connectionStatus = "<h2>Connected</h2>";
+      connecting = false;
+    } else if (WiFi.status() == WL_CONNECT_FAILED) {
+      connectionStatus = "Connection failed";
+      connecting = false;
+    } else if (WiFi.status() == .6) {
+      connectionStatus = "No network with this SSID found";
+      connecting = false;
+    }
+    delay(100);
+  }
+  message = "<p>Check <a href='/status'>wifi status</a>.</p>";
+
+  delay(300);
+
   replacement_t repls[] = { // the elements to replace in the template
   { 1, apSSID.c_str() },
   { 7, connectionStatus.c_str() },
@@ -166,9 +158,6 @@ void handleConnect() {
   String toSend = "";
   getHtml(toSend, boilerForm, ALEN(boilerForm), repls, ALEN(repls));
   webServer.send(200, "text/html", toSend);
-
-  //setupOTA();
-
 }
 
 // Function handles the status of the wifi connection
@@ -240,6 +229,20 @@ void getHtml(String &html, const char *boiler[], int boilerLen,
 // IP address and port number: CHANGE THE IP ADDRESS!
 #define FIRMWARE_SERVER_IP_ADDR "192.168.13.143"
 #define FIRMWARE_SERVER_PORT    "8000"
+void handleUpdate() {
+  Serial.println("serving page at /update");
+  replacement_t repls[] = { // the elements to replace in the boilerplate
+    { 1, apSSID.c_str() },
+    { 8, "<h2>Update site</h2>" },
+    { 9, "<p><a href='/'>Home</a></p>" },
+  };
+  
+  String toSend = "";
+  getHtml(toSend, boilerForm, ALEN(boilerForm), repls, ALEN(repls));
+  webServer.send(200, "text/html", toSend);
+
+  setupOTA();
+}
 
 void setupOTA() {
   // materials for doing an HTTPS GET on github from the BinFiles/ dir

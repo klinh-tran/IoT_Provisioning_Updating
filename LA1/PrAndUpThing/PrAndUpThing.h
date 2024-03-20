@@ -16,6 +16,7 @@ void handleRoot();
 void handleWifi();
 void handleConnect();
 void handleStatus();
+void handleUpdate();
 void handleNotFound();
 String ip2str(IPAddress address);
 
