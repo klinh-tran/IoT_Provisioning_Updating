@@ -13,8 +13,11 @@ extern int firmwareVersion; // used to check for updates
 void setupAP();
 void setupServer();
 void handleRoot();
+void handleWifi();
 void handleConnect();
+void handleStatus();
 void handleNotFound();
+String ip2str(IPAddress address);
 
 // boilerplate: constants & pattern parts of template
 extern const char *boiler[];
