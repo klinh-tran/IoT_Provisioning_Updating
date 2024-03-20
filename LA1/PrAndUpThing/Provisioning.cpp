@@ -1,5 +1,6 @@
 #include "PrAndUpThing.h"
 
+/// Provisioning ///
 WebServer webServer(80);
 
 // Boilerplate form to be used for selecting wifi network
@@ -130,4 +131,48 @@ void getHtml(String &html, const char *boiler[], int boilerLen,
     else
       html.concat(boiler[i]);
   }
+}
+
+/// Updating ///
+// IP address and port number: CHANGE THE IP ADDRESS!
+#define FIRMWARE_SERVER_IP_ADDR "192.168.13.143"
+#define FIRMWARE_SERVER_PORT    "8000"
+
+
+// helper for downloading from cloud firmware server; for experimental
+// purposes just use a hard-coded IP address and port (defined above)
+int doCloudGet(HTTPClient *http, String fileName) {
+  // build up URL from components; for example:
+  // http://192.168.4.2:8000/Thing.bin
+  String url =
+    String("http://") + FIRMWARE_SERVER_IP_ADDR + ":" +
+    FIRMWARE_SERVER_PORT + "/" + fileName;
+  Serial.printf("getting %s\n", url.c_str());
+
+  // make GET request and return the response code
+  http->begin(url);
+  http->addHeader("User-Agent", "ESP32");
+  return http->GET();
+}
+
+// callback handler for tracking OTA progress ///////////////////////////////
+void handleOTAProgress(size_t done, size_t total) {
+  float progress = (float) done / (float) total;
+  // dbf(otaDBG, "OTA written %d of %d, progress = %f\n", done, total, progress);
+
+  int barWidth = 70;
+  Serial.printf("[");
+  int pos = barWidth * progress;
+  for(int i = 0; i < barWidth; ++i) {
+    if(i < pos)
+      Serial.printf("=");
+    else if(i == pos)
+      Serial.printf(">");
+    else
+      Serial.printf(" ");
+  }
+  Serial.printf(
+    "] %d %%%c", int(progress * 100.0), (progress == 1.0) ? '\n' : '\r'
+  );
+  // Serial.flush();
 }
