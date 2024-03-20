@@ -50,6 +50,7 @@ void setupServer() {
   webServer.on("/connect", handleConnect);
   webServer.on("/status", handleStatus);
   webServer.on("/update", handleUpdate);
+  webServer.on("/setupOTA", setupOTA);
   webServer.onNotFound(handleNotFound);
   webServer.begin();
 }
@@ -98,6 +99,7 @@ void handleWifi() {
   // Set the replacement string to generated ssid options
   replacement_t repls[] = {
       {1, apSSID.c_str()},
+      {7, "<h2>Connect to a WiFi</h2>"},
       {8, "<p> Choose a network connection </p>\n<form "
         "action='/connect'>\n"    
         "<select name='networks' id='networks'>"},
@@ -130,7 +132,6 @@ void handleConnect() {
 
   // TODO: Change response to include button to take user back if they want to
   // try again.
-
   // Attempt to connect to given network
   while (connecting) {
     if (WiFi.status() == WL_CONNECTED) {
@@ -229,19 +230,22 @@ void getHtml(String &html, const char *boiler[], int boilerLen,
 // IP address and port number: CHANGE THE IP ADDRESS!
 #define FIRMWARE_SERVER_IP_ADDR "192.168.13.143"
 #define FIRMWARE_SERVER_PORT    "8000"
+
 void handleUpdate() {
   Serial.println("serving page at /update");
   replacement_t repls[] = { // the elements to replace in the boilerplate
     { 1, apSSID.c_str() },
-    { 8, "<h2>Update site</h2>" },
-    { 9, "<p><a href='/'>Home</a></p>" },
+    {7, "<h2>Updates</h2>"},
+    {8, "<p> Enter server URL: </p><form action = /setupOTA>"},
+    {9, "<input type='text' id='server_url' name='server_url' required>\n"
+      "<input type='submit'>\n</form>\n"},
   };
   
   String toSend = "";
   getHtml(toSend, boilerForm, ALEN(boilerForm), repls, ALEN(repls));
   webServer.send(200, "text/html", toSend);
 
-  setupOTA();
+  //setupOTA();
 }
 
 void setupOTA() {

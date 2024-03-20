@@ -21,19 +21,8 @@ void setup() {
   
   ///////
   Serial.printf("running firmware is at version %d\n", firmwareVersion);
-
-  // get on the network
-  // WiFi.begin(); // register MAC first! and add SSID/PSK details if needed
-  // uint16_t connectionTries = 0;
-  
-  // while(WiFi.status() != WL_CONNECTED) {
-  //   Serial.print(".");
-  //   if(connectionTries++ % 75 == 0) Serial.println("");
-  //   delay(250);
-  // }
   delay(500); // let things settle for half a second
 
-  //setupOTA();
 }
 
 
