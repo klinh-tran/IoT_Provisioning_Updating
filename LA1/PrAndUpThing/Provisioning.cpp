@@ -106,7 +106,8 @@ void handleWifi() {
       {9, char_array},
       {10,"</select>\n"
         "<input type='password' id='pass' name='password' required>\n"
-        "<input type='submit'>\n</form>\n"},
+        "<input type='submit'>\n</form>\n"
+        "<p><a href='/'>Home</a>.</p>"},
   };
 
   // Generate webpage and send to connected  client
@@ -125,7 +126,8 @@ void handleConnect() {
 
   bool connecting = true;
   String connectionStatus = "";
-  String message = "";
+  String status = "";
+  String home = "";
   WiFi.begin(ssid, password);
   delay(300);  // settle down
 
@@ -146,7 +148,8 @@ void handleConnect() {
     }
     delay(100);
   }
-  message = "<p>Check <a href='/status'>wifi status</a>.</p>";
+  status = "<p>Check <a href='/status'>wifi status</a>.</p>";
+  home = "<p><a href='/'>Home</a>.</p>";
 
   delay(300);
 
@@ -154,7 +157,8 @@ void handleConnect() {
   { 1, apSSID.c_str() },
   { 7, connectionStatus.c_str() },
   { 8, "" },
-  { 9, message.c_str() },
+  { 9, status.c_str() },
+  { 10, home.c_str() },
   };
   String toSend = "";
   getHtml(toSend, boilerForm, ALEN(boilerForm), repls, ALEN(repls));
@@ -228,8 +232,6 @@ void getHtml(String &html, const char *boiler[], int boilerLen,
 
 /// Updating ///
 // IP address and port number: CHANGE THE IP ADDRESS!
-#define FIRMWARE_SERVER_IP_ADDR "192.168.13.143"
-#define FIRMWARE_SERVER_PORT    "8000"
 
 void handleUpdate() {
   Serial.println("serving page at /update");
@@ -250,6 +252,11 @@ void handleUpdate() {
 
 void setupOTA() {
   // materials for doing an HTTPS GET on github from the BinFiles/ dir
+  Serial.print("user input: ");
+  Serial.println(webServer.arg(0));
+  #define FIRMWARE_SERVER_IP_ADDR webServer.arg(0)
+  #define FIRMWARE_SERVER_PORT    "8000"
+
   HTTPClient http;  // HTTPClient is a class used to make HTTP requests.
   int respCode;     // store the response code from the server
   int highestAvailableVersion = -1;
