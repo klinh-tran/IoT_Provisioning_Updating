@@ -8,12 +8,9 @@ const int RED_LED_PIN = 6;
 void setup() {
   // begin serial for writing to console
   Serial.begin(115200);
-  delay(500);
+  delay(5000);
 
-
-  // configuring wifi access point
-  WiFi.mode(WIFI_AP_STA);
-  WiFi.softAP("ESP32S3 Provisioning", "provisioning");
+  setupAP();
 
   setupServer();
 

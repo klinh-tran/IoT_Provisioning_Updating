@@ -23,6 +23,25 @@ const char *boilerForm[]{
     "</body></html>\n\n",               // 9
 };
 
+String apSSID;
+
+// Startup utilities
+// TODO: ESP32 operates as both an AP and a STA. Notify if there is connection issue
+void setupAP() {
+  apSSID = "ESP32S3 Provisioning";
+
+  // configuring wifi access point
+  if(! WiFi.mode(WIFI_AP_STA))  
+    Serial.println("failed to set Wifi mode");
+  if(! WiFi.softAP(apSSID.c_str(), "provisioning")) 
+    Serial.println("failed to start soft AP");
+  
+  Serial.print("AP SSID: ");
+  Serial.println(apSSID);
+  Serial.print("AP=");
+  Serial.println(WiFi.softAPIP());
+}
+
 // Handling web server connections
 // Open webpage on http://192.168.4.1/
 // TODO: Make it so this page appears automatically on connection with DNS
@@ -37,6 +56,7 @@ void setupServer() {
 // Displays a list of available wifi networks and allows the user to attempt
 // to connect with a password
 void handleRoot() {
+  Serial.println("seriving page at /");
   int n = WiFi.scanNetworks();
   String replacementString = "";
 
@@ -72,6 +92,7 @@ void handleRoot() {
 // Function that attempts connection with user input
 // TODO: Add some validation for user input?
 void handleConnect() {
+  Serial.println("serving page /connect");
   String ssid = webServer.arg(0);
   String password = webServer.arg(1);
 

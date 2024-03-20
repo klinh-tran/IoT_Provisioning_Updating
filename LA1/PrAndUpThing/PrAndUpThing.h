@@ -8,6 +8,7 @@
 extern WebServer webServer; // a simple web server
 
 // function protos
+void setupAP();
 void setupServer();
 void handleRoot();
 void handleConnect();
