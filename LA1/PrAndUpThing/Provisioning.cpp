@@ -5,21 +5,21 @@ WebServer webServer(80);
 
 // Boilerplate form to be used for selecting wifi network
 const char *boilerForm[]{
-    "<html><head><title>",    // 0
-    "default title",     // 1
-    "</title>\n",             // 2
-    "<meta charset='utf-8'>", // 3
+    "<html><head><title>",                                                       // 0
+    "default title",                                                             // 1
+    "</title>\n",                                                                // 2
+    "<meta charset='utf-8'>",                                                    // 3
 
     "<meta name='viewport' content='width=device-width, inital-scale=1.0'>\n"
-    "<style>body{background:#FFF; color:#000, font-family: sans-serif;", // 4
+    "<style>body{background:#FFF; color:#000, font-family: sans-serif;",         // 4
 
-    "font-size: 150%;}</style>\n", // 5
-    "</head><body>\n",             // 6
-    "<h2>Welcome!</h2>\n",                                       //  7
-    "<!-- page payload goes here... -->\n",                               //  8
-    "<!-- ...and/or here... -->\n",                                       //  9
-    "<!-- ...and/or here... -->\n",                                       //  10
-    "</body></html>\n\n",               // 11
+    "font-size: 150%;}</style>\n",                                               // 5
+    "</head><body>\n",                                                           // 6
+    "<h2>Welcome!</h2>\n",                                                       // 7
+    "<!-- page payload goes here... -->\n",                                      // 8
+    "<!-- ...and/or here... -->\n",                                              // 9
+    "<!-- ...and/or here... -->\n",                                              // 10
+    "</body></html>\n\n",                                                        // 11
 };
 
 String apSSID;
@@ -121,28 +121,54 @@ void handleConnect() {
 
   bool connecting = true;
   String connectionStatus = "";
+  String message = "";
   WiFi.begin(ssid, password);
 
   // Attempt to connect to given network
-  while (connecting) {
+  // while (connecting) {
+  //   if (WiFi.status() == WL_CONNECTED) {
+  //     connectionStatus = "<h2>Connected</h2>";
+  //     message = "<p>Check <a href='/status'>wifi status</a>.</p>";
+  //     connecting = false;
+  //   } else if (WiFi.status() == WL_CONNECT_FAILED) {
+  //     connectionStatus = "<h2>Connection failed</h2>";
+  //     message = "<p>Check <a href='/status'>wifi status</a>.</p>";
+  //     connecting = false;
+  //   } else if (WiFi.status() == .6) {
+  //     connectionStatus = "<h2>No network with this SSID found</h2>";
+  //     message = "<p>Check <a href='/status'>wifi status</a>.</p>";
+  //     connecting = false;
+  //   }
+  // }
+
+  delay(100);
+
+  for(uint8_t i = 0; i < webServer.args(); i++ ) {
     if (WiFi.status() == WL_CONNECTED) {
-      connectionStatus = "Connected";
+      connectionStatus = "<h2>Connected</h2>";
+      message = "<p>Check <a href='/status'>wifi status</a>.</p>";
       connecting = false;
-    } else if (WiFi.status() == WL_CONNECT_FAILED) {
-      connectionStatus = "Connection failed";
-      connecting = false;
-    } else if (WiFi.status() == .6) {
-      connectionStatus = "No network with this SSID found";
+    } else {
+      connectionStatus = "<h2>Connection failed. Please check again :/</h2>";
+      message = "<p>Check <a href='/status'>wifi status</a>.</p>";
       connecting = false;
     }
-    delay(100);
   }
-
-  //setupOTA();
 
   // TODO: Change response to include button to take user back if they want to
   // try again.
-  webServer.send(200, "text/plain", connectionStatus);
+  replacement_t repls[] = { // the elements to replace in the template
+  { 1, apSSID.c_str() },
+  { 7, connectionStatus.c_str() },
+  { 8, "" },
+  { 9, message.c_str() },
+  };
+  String toSend = "";
+  getHtml(toSend, boilerForm, ALEN(boilerForm), repls, ALEN(repls));
+  webServer.send(200, "text/html", toSend);
+
+  //setupOTA();
+
 }
 
 // Function handles the status of the wifi connection
