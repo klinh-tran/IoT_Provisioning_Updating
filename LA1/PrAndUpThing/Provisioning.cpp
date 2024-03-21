@@ -24,10 +24,13 @@ const char *boilerForm[]{
 
 String apSSID;
 
+int pinArray[] = {10, 11, 12, 13}; // From Furthest to Closest connected light
+const int greenProgressLight = 15; // Set to pin green update light is connected to
+const int redProgressLight = 14; // Set to pin red update light is connected to
+
 // Startup utilities
-// TODO: ESP32 operates as both an AP and a STA. Notify if there is connection issue
 void setupAP() {
-  apSSID = "ESP32S3 Provisioning";
+  apSSID = "CAM ESP32S3 Provisioning";
 
   // configuring wifi access point
   if(! WiFi.mode(WIFI_AP_STA))  
@@ -41,6 +44,7 @@ void setupAP() {
   Serial.println(WiFi.softAPIP());
 }
 
+
 // Handling web server connections
 // Open webpage on http://192.168.4.1/
 // TODO: Make it so this page appears automatically on connection with DNS
@@ -53,11 +57,18 @@ void setupServer() {
   webServer.on("/setupOTA", setupOTA);
   webServer.onNotFound(handleNotFound);
   webServer.begin();
+
+  for (int i=0; i < 4; i++){
+    pinMode(pinArray[i], OUTPUT); // Yellow Progress lights
+  }
+
+  pinMode(redProgressLight, OUTPUT); // RED Update Light
+  pinMode(greenProgressLight, OUTPUT); // Green Update Light
 }
 
 // Function handles a user connecting to root page
 void handleRoot() {
-  Serial.println("seriving page at /");
+  Serial.println("serving page at /");
   replacement_t repls[] = { // the elements to replace in the boilerplate
     {  1, apSSID.c_str() },
     {  8, "<p>Choose a <a href=\"wifi\">wifi access point</a>.</p>" },
@@ -74,9 +85,11 @@ void handleRoot() {
 // Displays a list of available wifi networks and allows the user to attempt
 // to connect with a password
 void handleWifi() {
-  Serial.println("seriving page at /wifi");
+  Serial.println("serving page at /wifi");
   int n = WiFi.scanNetworks();
   String replacementString = "";
+
+  replacementString.concat("<option value='uos-other'>uos-other</option>\n");
 
   // For loop creates wifi ssid options for html form dropdown
   for (int i = 0; i < n; i++) {
@@ -244,6 +257,9 @@ void handleUpdate() {
 }
 
 void setupOTA() {
+  digitalWrite(greenProgressLight, LOW);
+  digitalWrite(redProgressLight, LOW);
+  
   Serial.println("serving page /setupOTA");
   // materials for doing an HTTPS GET on github from the BinFiles/ dir
   #define FIRMWARE_SERVER_IP_ADDR webServer.arg(0)
@@ -326,23 +342,31 @@ void setupOTA() {
       if(Update.isFinished()) {
         updateStatus = "<p>Update successfully finished; please reboot...</p>";
         Serial.printf("update successfully finished\n\n");
+        digitalWrite(greenProgressLight, HIGH);
         isUpdated = true;
       } else {
         updateStatus = "<p>Fail to update...; please check again :(</p>";
         Serial.printf("update didn't finish correctly :(\n");
+        digitalWrite(redProgressLight, HIGH);
         Serial.flush();
       }
     } else {
       updateStatus = "<p>An update error occurred :(</p>";
       Serial.printf("an update error occurred, #: %d\n" + Update.getError());
+      digitalWrite(redProgressLight, HIGH);
       Serial.flush();
     }
   } else {
     updateStatus = "<p>Not enough space to start OTA update :(</p>";
     Serial.printf("not enough space to start OTA update :(\n");
+    digitalWrite(redProgressLight, HIGH);
     Serial.flush();
   }
   stream.flush();
+
+  for (int i=0; i<4; i++){
+    digitalWrite(pinArray[i], LOW);
+  }
 
   // post-OTA stage
   replacement_t repls[] = {
@@ -357,6 +381,10 @@ void setupOTA() {
   getHtml(toSend, boilerForm, ALEN(boilerForm), repls, ALEN(repls));
   webServer.send(200, "text/html", toSend);
   delay(5000);
+
+  digitalWrite(greenProgressLight, LOW);
+  digitalWrite(redProgressLight, LOW);
+
   if(isUpdated == true) {
     Serial.printf("rebooting...\n\n");
     ESP.restart();
@@ -381,23 +409,14 @@ int doCloudGet(HTTPClient *http, String fileName) {
 // callback handler for tracking OTA progress ///////////////////////////////
 void handleOTAProgress(size_t done, size_t total) {
   float progress = (float) done / (float) total;
-  // dbf(otaDBG, "OTA written %d of %d, progress = %f\n", done, total, progress);
 
-  int barWidth = 70;
-  Serial.printf("[");
-  int pos = barWidth * progress;
-  for(int i = 0; i < barWidth; ++i) {
-    if(i < pos)
-      Serial.printf("=");
-    else if(i == pos)
-      Serial.printf(">");
-    else
-      Serial.printf(" ");
+  int lightCount = int(progress*100) / 25;
+  lightCount += 1;
+  
+  for (int i = 0; i<lightCount; i++) {
+    digitalWrite(pinArray[i], HIGH);
   }
-  Serial.printf(
-    "] %d %%%c", int(progress * 100.0), (progress == 1.0) ? '\n' : '\r'
-  );
-  // Serial.flush();
+
 }
 
 String ip2str(IPAddress address) { // utility for printing IP addresses
