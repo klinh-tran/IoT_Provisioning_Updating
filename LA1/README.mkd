@@ -2,7 +2,50 @@
 # COM3505 Lab Assessment 1
 
 Put your documentation here. 
+## Define/Explain about Provisioning and Updating
+## The visual indication of LEDs
 
+## Instruction
+***1. Require:***
+ - One device to run the web page (*Provisioning* device).
+ - One device the stores the update versions (*Updating* device).
+ - Wifi network (any kinds, as long as it does not require sign-in).
+
+***2. Set up a local HTTP server***
+ - On *Updating* device, open Command Prompt.
+ - Navigate to the directory that contains *firmware* folder (inside *firmware/*, there are files called *verison.txt* and *N.bin*, where *N* is the contents of *version.txt* and represents the **highest available firmware revision number** currently available.)
+ - run command **python -m http.server 8000**
+
+***3. Burn PrAndUpThing.ino***  - Cam
+
+***4. Provisioning***
+ - Without conneciton setup, the external LED on the breadboard is ***RED***.
+ - On *Provisioning* device...
+ - Connect to WiFi called ***ESP32S3 Provisioning***, password is ***provisioning***
+ - Open a web browser, go to [192.168.4.1](http://192.168.4.1) (notice: wifi connection from ESP32S3 is not stable, please check if you lose the connection. If so, just connect again.)
+ - If connected successfully, you will see a website with three options:
+   - Choose a [*wifi access point*](http://192.168.4.1/wifi)
+   - Check [*wifi status*](http://192.168.4.1/status)
+   - Check for [*updates*](http://192.168.4.1/update)
+ -  Click  ***wifi access point***.
+ - On WiFi Website, there is a dropdown box where you can select the **WiFi SSID** you want to connect to (if you cannot see the network you are looking for, but confident that it is allowing connection, please refresh the page and look again at the dropdown box.)
+ - Put the corresponding password of the selected WiFi.
+ - Click ***Submit***.
+ - Allow a few seconds for the connection attempt.
+ - If the connection is successful, the external LED changes to **GREEN**. You will be directed to the website stating if the WiFi connection is successful, and you can check the status of network connection on [*WiFi status*](http://192.168.4.1/status).
+
+***5. Updating***  - Need more detail about LED indication
+ - After successfully getting the ESP32S3 device connected to the network, connect the *Updating* device to the same network.
+ - Command **python -m http.server 8000** must still be running at the right directory (where *firmware* folder stays.)
+ - Back to [Home page](http://192.168.4.1).
+ - Click  ***updates***.
+ - Enter the local IP Address of the *Updating* device in server URL field.
+ - Click ***Submit***.
+ - Allow a few seconds to a few minutes for update checking and update installation if new updates are found.
+ - Eventually, you will be directed to a website stating if your program is up-to-date, or if the update installation is successful, or there is an update error.
+
+### photo
+ 
 Put your code in [PrAndUpThing/PrAndUpThing.ino](PrAndUpThing/PrAndUpThing.ino).
 
 See [the rubric](rubric.mkd) for more details.
