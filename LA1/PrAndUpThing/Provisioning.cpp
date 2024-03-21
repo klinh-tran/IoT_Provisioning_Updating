@@ -382,24 +382,14 @@ int doCloudGet(HTTPClient *http, String fileName) {
 
 // callback handler for tracking OTA progress ///////////////////////////////
 void handleOTAProgress(size_t done, size_t total) {
-  float progress = (float) done / (float) total;
+float progress = (float) done / (float) total;
   // dbf(otaDBG, "OTA written %d of %d, progress = %f\n", done, total, progress);
-
-  int barWidth = 70;
-  Serial.printf("[");
-  int pos = barWidth * progress;
-  for(int i = 0; i < barWidth; ++i) {
-    if(i < pos)
-      Serial.printf("=");
-    else if(i == pos)
-      Serial.printf(">");
-    else
-      Serial.printf(" ");
+  progress = progress * 100;
+  int lightCount = (int) progress % 20;
+  
+  for (int i = 0; i<lightCount; i++) {
+    digitalWrite(pinArray[i], HIGH);
   }
-  Serial.printf(
-    "] %d %%%c", int(progress * 100.0), (progress == 1.0) ? '\n' : '\r'
-  );
-  // Serial.flush();
 }
 
 String ip2str(IPAddress address) { // utility for printing IP addresses
