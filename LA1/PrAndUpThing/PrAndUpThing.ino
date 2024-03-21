@@ -12,8 +12,8 @@ void setup() {
   delay(5000);
 
   setupAP();
-
   setupServer();
+  setupOTAUpdate();
 
   // Setup pins for Wifi Status Lights
   pinMode(GREEN_LED_PIN, OUTPUT);
@@ -39,9 +39,4 @@ void loop() {
 
   // Handle webserver connections
   webServer.handleClient();
-
-  // TODO: Once connected to wifi allow for update over the air
-  // implement function which checks for user input then runs firmware update check
-  // include more led pins to show the progress of update similar to how progress bar is 
-  // done in lab exercise
 }
