@@ -12,8 +12,9 @@ void setup() {
   delay(5000);
 
   setupAP();
-
-  setupServer();
+  setupWiFiProv();
+  setupOTA();
+  webServer.begin();
 
   // Setup pins for Wifi Status Lights
   pinMode(GREEN_LED_PIN, OUTPUT);
