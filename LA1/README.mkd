@@ -1,22 +1,30 @@
 
 # COM3505 Lab Assessment 1
 
-Put your documentation here. 
-## Define/Explain about Provisioning and Updating
-## The visual indication of LEDs
+## ESP32S3 Provisioning and OTA update
+This firmware allows for your ESP32S3 to be properly provisioned and be updated over the air. Provisioning is used so that the user is able to connect the device to a WiFi network without the network having to be hardcoded in the firmware itself. Once the device is connected to the internet we allow for over the air updates from a seperate device on the same network. This allows the device to be run completely wirelessly without having to connect to a seperate machine.
 
 ## Instruction
 ***1. Require:***
  - One device to run the web page (*Provisioning* device).
  - One device the stores the update versions (*Updating* device).
  - Wifi network (any kinds, as long as it does not require sign-in).
+***2. Breadboard setup***
+ - Setup the breadboard as indicated by the image below.
 
 ***2. Set up a local HTTP server***
  - On *Updating* device, open Command Prompt.
  - Navigate to the directory that contains *firmware* folder (inside *firmware/*, there are files called *verison.txt* and *N.bin*, where *N* is the contents of *version.txt* and represents the **highest available firmware revision number** currently available.)
  - run command **python -m http.server 8000**
 
-***3. Burn PrAndUpThing.ino***  - Cam
+***3. Burn PrAndUpThing.ino*** 
+ - Follow installation instructions for platformio cli at [https://platformio.org/install/cli]
+ - Connect your ESP32S3 to your laptop and set it into burn mode (Hold the boot button then press the reset button and release both)
+ - Run the following command in your terminal from this directory
+ ```
+ pio run -t upload
+ ```
+ - Once the firmware has been loaded onto the device hit the reset button to load it.
 
 ***4. Provisioning***
  - Without conneciton setup, the external LED on the breadboard is ***RED***.
@@ -34,7 +42,7 @@ Put your documentation here.
  - Allow a few seconds for the connection attempt.
  - If the connection is successful, the external LED changes to **GREEN**. You will be directed to the website stating if the WiFi connection is successful, and you can check the status of network connection on [*WiFi status*](http://192.168.4.1/status).
 
-***5. Updating***  - Need more detail about LED indication
+***5. Updating***  
  - After successfully getting the ESP32S3 device connected to the network, connect the *Updating* device to the same network.
  - Command **python -m http.server 8000** must still be running at the right directory (where *firmware* folder stays.)
  - Back to [Home page](http://192.168.4.1).
@@ -42,7 +50,8 @@ Put your documentation here.
  - Enter the local IP Address of the *Updating* device in server URL field.
  - Click ***Submit***.
  - Allow a few seconds to a few minutes for update checking and update installation if new updates are found.
- - Eventually, you will be directed to a website stating if your program is up-to-date, or if the update installation is successful, or there is an update error.
+ - If new update is found the download will start, yellow LEDs act as a progress indicator for how far along the download is.
+ - Eventually, you will be directed to a website stating if your program is up-to-date, or if the update installation is successful, or there is an update error. This will be reflected on the board as well with the second set of red and green LED's lighting up for failure and success respectively.
 
 ### photo
  
