@@ -126,10 +126,8 @@ void handleConnect() {
 
   bool connecting = true;
   String connectionStatus = "";
-  String status = "";
-  String home = "";
   WiFi.begin(ssid, password);
-  delay(300);  // settle down
+  //delay(300);  // settle down
 
 
   // TODO: Change response to include button to take user back if they want to
@@ -148,17 +146,13 @@ void handleConnect() {
     }
     delay(100);
   }
-  status = "<p>Check <a href='/status'>wifi status</a>.</p>";
-  home = "<p><a href='/'>Home</a>.</p>";
-
-  delay(300);
 
   replacement_t repls[] = { // the elements to replace in the template
   { 1, apSSID.c_str() },
   { 7, connectionStatus.c_str() },
   { 8, "" },
-  { 9, status.c_str() },
-  { 10, home.c_str() },
+  { 9, "<p>Check <a href='/status'>wifi status</a>.</p>"},
+  { 10, "<p><a href='/'>Home</a>.</p>"},
   };
   String toSend = "";
   getHtml(toSend, boilerForm, ALEN(boilerForm), repls, ALEN(repls));
@@ -233,6 +227,7 @@ void getHtml(String &html, const char *boiler[], int boilerLen,
 /// Updating ///
 // IP address and port number: CHANGE THE IP ADDRESS!
 
+// function to input server URL for OTA
 void handleUpdate() {
   Serial.println("serving page at /update");
   replacement_t repls[] = { // the elements to replace in the boilerplate
@@ -246,17 +241,17 @@ void handleUpdate() {
   String toSend = "";
   getHtml(toSend, boilerForm, ALEN(boilerForm), repls, ALEN(repls));
   webServer.send(200, "text/html", toSend);
-
-  //setupOTA();
 }
 
 void setupOTA() {
+  Serial.println("serving page /setupOTA");
   // materials for doing an HTTPS GET on github from the BinFiles/ dir
-  Serial.print("user input: ");
-  Serial.println(webServer.arg(0));
   #define FIRMWARE_SERVER_IP_ADDR webServer.arg(0)
   #define FIRMWARE_SERVER_PORT    "8000"
-
+  
+  String toSend = "";
+  String updateStatus = "";
+  bool isUpdated = false;
   HTTPClient http;  // HTTPClient is a class used to make HTTP requests.
   int respCode;     // store the response code from the server
   int highestAvailableVersion = -1;
@@ -270,15 +265,29 @@ void setupOTA() {
     Serial.print("Highest available version: ");
     Serial.println(highestAvailableVersion);
   }
-  else
+  else {
+    updateStatus = "<p>Fail to get version!</p>";
     Serial.printf("couldn't get version! rtn code: %d\n", respCode);
-  http.end(); // free resources
+  }
 
   // do we know the latest version, and does the firmware need updating?
   if(respCode < 0) {
-    return;
+    updateStatus = "<p>Fail to get version!</p>";
+    //return;
   } else if(firmwareVersion >= highestAvailableVersion) {
     Serial.printf("firmware is up to date\n");
+    updateStatus = "<p>Firmware is up to date</p>";
+    replacement_t repls[] = {
+      {1, apSSID.c_str()},
+      {7, "<h2>Checking Updates</h2>"},
+      {8, updateStatus.c_str()},
+      {9, ""},
+      {10,"<p><a href='/'>Home</a>.</p>"},
+    };
+
+    // Generate webpage and send to connected  client
+    getHtml(toSend, boilerForm, ALEN(boilerForm), repls, ALEN(repls));
+    webServer.send(200, "text/html", toSend);
     return;
   }
 
@@ -293,14 +302,16 @@ void setupOTA() {
   binName += ".bin";
   respCode = doCloudGet(&http, binName);
   int updateLength = http.getSize();
-
+  delay(300); // settle down
+  
   // possible improvement: if size is improbably big or small, refuse
   if(respCode > 0 && respCode != 404) { // check response code (-ve on failure)
     Serial.printf(".bin code/size: %d; %d\n\n", respCode, updateLength);
   } else {
+    updateStatus =  "<p>Failed to get .bin!</p>";
     Serial.printf("failed to get .bin! return code is: %d\n", respCode);
-    http.end(); // free resources
-    return;
+    //http.end(); // free resources
+    //return;
   }
 
   // write the new version of the firmware to flash
@@ -313,21 +324,43 @@ void setupOTA() {
       Serial.printf("update done, now finishing...\n");
       Serial.flush();
       if(Update.isFinished()) {
-        Serial.printf("update successfully finished; rebooting...\n\n");
-        ESP.restart();
+        updateStatus = "<p>Update successfully finished; please reboot...</p>";
+        Serial.printf("update successfully finished\n\n");
+        isUpdated = true;
       } else {
+        updateStatus = "<p>Fail to update...; please check again :(</p>";
         Serial.printf("update didn't finish correctly :(\n");
         Serial.flush();
       }
     } else {
+      updateStatus = "<p>An update error occurred :(</p>";
       Serial.printf("an update error occurred, #: %d\n" + Update.getError());
       Serial.flush();
     }
   } else {
+    updateStatus = "<p>Not enough space to start OTA update :(</p>";
     Serial.printf("not enough space to start OTA update :(\n");
     Serial.flush();
   }
   stream.flush();
+
+  // post-OTA stage
+  replacement_t repls[] = {
+    {1, apSSID.c_str()},
+    {7, "<h2>Checking Updates</h2>"},
+    {8, updateStatus.c_str()},
+    {9, ""},
+    {10,"<p><a href='/'>Home</a>.</p>"},
+  };
+
+  // Generate webpage and send to connected  client
+  getHtml(toSend, boilerForm, ALEN(boilerForm), repls, ALEN(repls));
+  webServer.send(200, "text/html", toSend);
+  delay(5000);
+  if(isUpdated == true) {
+    Serial.printf("rebooting...\n\n");
+    ESP.restart();
+  }
 }
 
 // helper for downloading from cloud firmware server; for experimental
