@@ -27,7 +27,7 @@ String apSSID;
 // Startup utilities
 // TODO: ESP32 operates as both an AP and a STA. Notify if there is connection issue
 void setupAP() {
-  apSSID = "ESP32S3 Provisioning";
+  apSSID = "CAM ESP32S3 Provisioning";
 
   // configuring wifi access point
   if(! WiFi.mode(WIFI_AP_STA))  
@@ -57,7 +57,7 @@ void setupServer() {
 
 // Function handles a user connecting to root page
 void handleRoot() {
-  Serial.println("seriving page at /");
+  Serial.println("serving page at /");
   replacement_t repls[] = { // the elements to replace in the boilerplate
     {  1, apSSID.c_str() },
     {  8, "<p>Choose a <a href=\"wifi\">wifi access point</a>.</p>" },
@@ -74,9 +74,11 @@ void handleRoot() {
 // Displays a list of available wifi networks and allows the user to attempt
 // to connect with a password
 void handleWifi() {
-  Serial.println("seriving page at /wifi");
+  Serial.println("serving page at /wifi");
   int n = WiFi.scanNetworks();
   String replacementString = "";
+
+  replacementString.concat("<option value='uos-other'>uos-other</option>\n");
 
   // For loop creates wifi ssid options for html form dropdown
   for (int i = 0; i < n; i++) {
