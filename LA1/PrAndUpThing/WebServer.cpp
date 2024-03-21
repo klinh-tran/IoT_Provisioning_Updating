@@ -35,16 +35,25 @@ void setupServer() {
 // Function handles a user connecting to root page
 void handleRoot() {
   Serial.println("serving page at /");
+  String str_firmwareVersion = String(firmwareVersion);
+  String firmwareString = String(apSSID + " Firmware: ");
+
+  String titleString = "<h2>";
+  titleString.concat(firmwareString);
+  titleString.concat(str_firmwareVersion);
+  titleString.concat("</h2>");
+
   replacement_t repls[] = { // the elements to replace in the boilerplate
-    {  1, apSSID.c_str() },
-    {  8, "<p>Choose a <a href=\"wifi\">wifi access point</a>.</p>" },
-    {  9, "<p>Check <a href='/status'>wifi status</a>.</p>" },
-    { 10, "<p>Check for <a href='/update'>updates</a>.</p>" },
-  };
-  
+     {  7, titleString.c_str() },
+     {  8, "<p>Choose a <a href=\"wifi\">wifi access point</a>.</p>" },
+     {  9, "<p>Check <a href='/status'>wifi status</a>.</p>" },
+     { 10, "<p>Check for <a href='/update'>updates</a>.</p>" },
+ };
+
   String toSend = "";
   getHtml(toSend, boilerPage, ALEN(boilerPage), repls, ALEN(repls));
   webServer.send(200, "text/html", toSend);
+
 }
 
 void handleNotFound() { webServer.send(404, "text/plain", "Page not found"); }
