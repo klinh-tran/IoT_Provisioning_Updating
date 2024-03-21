@@ -19,7 +19,10 @@ const char *boilerForm[]{
     "<!-- page payload goes here... -->\n",                                      // 8
     "<!-- ...and/or here... -->\n",                                              // 9
     "<!-- ...and/or here... -->\n",                                              // 10
-    "</body></html>\n\n",                                                        // 11
+    "<!-- ...and/or here... -->\n",                                              // 11
+    "<!-- ...and/or here... -->\n",                                              // 12
+    "<!-- ...and/or here... -->\n",                                              // 13
+    "</body></html>\n\n",                                                        // 14
 };
 
 String apSSID;
@@ -30,7 +33,7 @@ const int redProgressLight = 14; // Set to pin red update light is connected to
 
 // Startup utilities
 void setupAP() {
-  apSSID = "CAM ESP32S3 Provisioning";
+  apSSID = "ESP32S3 Provisioning";
 
   // configuring wifi access point
   if(! WiFi.mode(WIFI_AP_STA))  
@@ -69,11 +72,19 @@ void setupServer() {
 // Function handles a user connecting to root page
 void handleRoot() {
   Serial.println("serving page at /");
+  
+  String str_firmwareVersion = String(firmwareVersion);
+  char newChar[str_firmwareVersion.length()];
+  str_firmwareVersion.toCharArray(newChar,str_firmwareVersion.length()); 
+
   replacement_t repls[] = { // the elements to replace in the boilerplate
     {  1, apSSID.c_str() },
     {  8, "<p>Choose a <a href=\"wifi\">wifi access point</a>.</p>" },
     {  9, "<p>Check <a href='/status'>wifi status</a>.</p>" },
     { 10, "<p>Check for <a href='/update'>updates</a>.</p>" },
+    { 11, "<p><b>Firmware version: "},
+    { 12, str_firmwareVersion.c_str() },
+    { 13, "</b></p>"},
   };
   
   String toSend = "";
