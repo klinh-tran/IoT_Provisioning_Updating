@@ -9,6 +9,7 @@ This firmware allows for your ESP32S3 to be properly provisioned and be updated 
  - One device to run the web page (*Provisioning* device).
  - One device the stores the update versions (*Updating* device).
  - Wifi network (any kinds, as long as it does not require sign-in).
+ 
 ***2. Breadboard setup***
  - Setup the breadboard as indicated by the image below.
 
