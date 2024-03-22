@@ -3,7 +3,7 @@
 
 const int GREEN_LED_PIN = 9;
 const int RED_LED_PIN = 6;
-int firmwareVersion = 4;
+int firmwareVersion = 5;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
