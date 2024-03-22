@@ -11,11 +11,7 @@ This firmware allows for your ESP32S3 to be properly provisioned and be updated 
  - Wifi network (any kinds, as long as it does not require sign-in).
  
 ***2. Breadboard setup***
- - Setup the breadboard as indicated by the image below.
-
- ![]("breadboard.jpg"){width=50%}
-
- 
+ - Setup the breadboard as indicated by this [image](breadboard.jpg) below.
  - Connect the LEDS to the following GPIO pins from the furthest LED to the closest [10,11,12,13,14,15,6,9]
 
 ***2. Set up a local HTTP server***
