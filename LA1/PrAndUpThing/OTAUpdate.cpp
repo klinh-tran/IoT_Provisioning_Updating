@@ -32,7 +32,7 @@ void setupOTAUpdate() {
 }
 
 /// Updating ///
-// function to input server URL for OTA
+// function to handle OTA Update process
 void handleUpdate() {
   Serial.println("serving page at /update");
   replacement_t repls[] = { // the elements to replace in the boilerplate
@@ -82,7 +82,6 @@ void OTAUpdate() {
   // do we know the latest version, and does the firmware need updating?
   if(respCode < 0) {
     updateStatus = "<p>Fail to get version!</p>";
-    //return;
   } else if(firmwareVersion >= highestAvailableVersion) {
     Serial.printf("firmware is up to date\n");
     updateStatus = "<p>Firmware is up to date</p>";
@@ -119,8 +118,6 @@ void OTAUpdate() {
   } else {
     updateStatus =  "<p>Failed to get .bin!</p>";
     Serial.printf("failed to get .bin! return code is: %d\n", respCode);
-    //http.end(); // free resources
-    //return;
   }
 
   // write the new version of the firmware to flash
