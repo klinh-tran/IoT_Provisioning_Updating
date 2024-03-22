@@ -13,6 +13,9 @@ This firmware allows for your ESP32S3 to be properly provisioned and be updated 
 ***2. Breadboard setup***
  - Setup the breadboard as indicated by the image below.
 
+ ![screenshot](breadboard.png)
+ 
+ - Connect the LEDS to the following GPIO pins from the furthest LED to the closest [10,11,12,13,14,15,6,9]
 
 ***2. Set up a local HTTP server***
  - On *Updating* device, open Command Prompt.
