@@ -36,14 +36,16 @@ void setupServer() {
 void handleRoot() {
   Serial.println("serving page at /");
   String str_firmwareVersion = String(firmwareVersion);
-  String firmwareString = String(apSSID + " Firmware: ");
+  String firmwareString = String("SSID: " + apSSID + "<br> Firmware: ");
 
-  String titleString = "<h2>";
+  String titleString = "<h1>Welcome</h1>";
+  titleString.concat("<h3>");
   titleString.concat(firmwareString);
   titleString.concat(str_firmwareVersion);
-  titleString.concat("</h2>");
+  titleString.concat("</h3>");
 
   replacement_t repls[] = { // the elements to replace in the boilerplate
+     { 1, apSSID.c_str() },
      {  7, titleString.c_str() },
      {  8, "<p>Choose a <a href=\"wifi\">wifi access point</a>.</p>" },
      {  9, "<p>Check <a href='/status'>wifi status</a>.</p>" },

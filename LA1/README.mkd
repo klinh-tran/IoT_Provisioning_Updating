@@ -34,7 +34,7 @@ This firmware allows for your ESP32S3 to be properly provisioned and be updated 
  - On *Provisioning* device...
  - Connect to WiFi called ***ESP32S3 Provisioning***, password is ***provisioning***
  - Open a web browser, go to [192.168.4.1](http://192.168.4.1) (notice: wifi connection from ESP32S3 is not stable, please check if you lose the connection. If so, just connect again.)
- - If connected successfully, you will see a website with three options:
+ - If connected successfully, you will see a ***Welcome*** website with the information on *Access Point SSID*, *current firmware version*, and three options:
    - Choose a [*wifi access point*](http://192.168.4.1/wifi)
    - Check [*wifi status*](http://192.168.4.1/status)
    - Check for [*updates*](http://192.168.4.1/update)
