@@ -13,6 +13,7 @@ This firmware allows for your ESP32S3 to be properly provisioned and be updated 
 ***2. Breadboard setup***
  - Setup the breadboard as indicated by the image below.
 
+
 ***2. Set up a local HTTP server***
  - On *Updating* device, open Command Prompt.
  - Navigate to the directory that contains *firmware* folder (inside *firmware/*, there are files called *verison.txt* and *N.bin*, where *N* is the contents of *version.txt* and represents the **highest available firmware revision number** currently available.)
@@ -54,8 +55,9 @@ This firmware allows for your ESP32S3 to be properly provisioned and be updated 
  - If new update is found the download will start, yellow LEDs act as a progress indicator for how far along the download is.
  - Eventually, you will be directed to a website stating if your program is up-to-date, or if the update installation is successful, or there is an update error. This will be reflected on the board as well with the second set of red and green LED's lighting up for failure and success respectively.
 
-### photo
- 
+### [Click for Demonstration](https://www.youtube.com/shorts/dX22xZhOTkA)
+
+
 Put your code in [PrAndUpThing/PrAndUpThing.ino](PrAndUpThing/PrAndUpThing.ino).
 
 See [the rubric](rubric.mkd) for more details.
